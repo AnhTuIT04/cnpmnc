@@ -14,6 +14,7 @@ import SignInPage from "./pages/auth/signin";
 import SignUpPage from "./pages/auth/signup";
 import EmployeeList from "./pages/courses";
 import AssessmentsPage from "./pages/assessments";
+import AssessmentsByEmployeePage from "./pages/assessments-by-employee";
 
 function App() {
   return (
@@ -44,7 +45,14 @@ function App() {
               </GuestRoute>
             }
           />
-          <Route path="/about" element={<About />} />
+          <Route
+            path="/about"
+            element={
+              <ProtectedRoute>
+                <About />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/dashboard"
             element={
@@ -70,18 +78,10 @@ function App() {
             }
           />
           <Route
-            path="/about"
+            path="/assessments/:employeeId"
             element={
               <ProtectedRoute>
-                <About />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/students"
-            element={
-              <ProtectedRoute>
-                <Students />
+                <AssessmentsByEmployeePage />
               </ProtectedRoute>
             }
           />
