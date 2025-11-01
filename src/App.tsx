@@ -62,6 +62,14 @@ function App() {
             }
           />
           <Route
+            path="/assessments"
+            element={
+              <ProtectedRoute>
+                <AssessmentsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/about"
             element={
               <ProtectedRoute>
