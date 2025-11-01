@@ -1,6 +1,4 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-
-import Home from "./pages/home";
 import About from "./pages/about";
 import Dashboard from "./pages/dashboard";
 import Courses from "./pages/courses";
@@ -8,12 +6,17 @@ import Students from "./pages/students";
 import Reports from "./pages/reports";
 import Settings from "./pages/settings";
 import NotFound from "./pages/not-found";
+import LandingPage from "./pages/Landing";
+import SignInPage from "./pages/auth/signin";
+import SignUpPage from "./pages/auth/signup";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/auth/signin" element={<SignInPage />} />
+        <Route path="/auth/signup" element={<SignUpPage />} />
         <Route path="/about" element={<About />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/courses" element={<Courses />} />
