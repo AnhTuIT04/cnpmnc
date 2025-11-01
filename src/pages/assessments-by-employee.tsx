@@ -7,6 +7,8 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import type { AssessmentResponse } from "@/lib/mockAssessmentData";
 import { mockAssessmentData } from "@/lib/mockAssessmentData";
+import { FaFileExport } from "react-icons/fa";
+import * as XLSX from "xlsx";
 
 // API function to fetch assessments for a specific employee
 const fetchEmployeeAssessments = async (employeeId: number): Promise<AssessmentResponse> => {
@@ -96,6 +98,89 @@ export default function AssessmentsByEmployeePage() {
     // TODO: Implement edit assessment logic
   };
 
+  const handleExportToExcel = () => {
+    if (!data || !data.data || data.data.length === 0) {
+      alert("Không có dữ liệu để xuất");
+      return;
+    }
+
+    // Prepare main assessments data
+    const assessmentsData = data.data.map((assessment, index) => ({
+      "STT": index + 1,
+      "ID Đánh giá": assessment.assessmentId,
+      "Tên nhân viên": assessment.employee.name,
+      "Email nhân viên": assessment.employee.email,
+      "Người đánh giá": assessment.supervisor.name,
+      "Trạng thái": assessment.status === "InProgress" ? "Đang tiến hành" 
+        : assessment.status === "Completed" ? "Hoàn thành"
+        : assessment.status === "Pending" ? "Chờ xử lý"
+        : assessment.status === "Draft" ? "Bản nháp"
+        : assessment.status,
+      "Tổng điểm": assessment.totalScore.toFixed(2),
+      "Số tiêu chí": assessment.criteriaScores.length,
+      "Ngày tạo": format(new Date(assessment.createdAt), "dd/MM/yyyy HH:mm"),
+    }));
+
+    // Prepare detailed criteria scores data
+    const detailedData: any[] = [];
+    data.data.forEach((assessment, assessmentIndex) => {
+      assessment.criteriaScores.forEach((criteriaScore, criteriaIndex) => {
+        detailedData.push({
+          "STT Đánh giá": assessmentIndex + 1,
+          "ID Đánh giá": assessment.assessmentId,
+          "STT Tiêu chí": criteriaIndex + 1,
+          "ID Tiêu chí": criteriaScore.criteria.criteriaId,
+          "Tên tiêu chí": criteriaScore.criteria.criteriaName,
+          "Mô tả": criteriaScore.criteria.description,
+          "Loại": criteriaScore.criteria.category,
+          "Trọng số": criteriaScore.criteria.weight,
+          "Điểm": criteriaScore.score,
+          "Nhận xét": criteriaScore.comment || "-",
+        });
+      });
+    });
+
+    const wb = XLSX.utils.book_new();
+
+    const wsAssessments = XLSX.utils.json_to_sheet(assessmentsData);
+    const wsDetails = XLSX.utils.json_to_sheet(detailedData);
+
+    wsAssessments["!cols"] = [
+      { wch: 5 },  // STT
+      { wch: 12 }, // ID Đánh giá
+      { wch: 20 }, // Tên nhân viên
+      { wch: 30 }, // Email nhân viên
+      { wch: 20 }, // Người đánh giá
+      { wch: 15 }, // Trạng thái
+      { wch: 12 }, // Tổng điểm
+      { wch: 12 }, // Số tiêu chí
+      { wch: 18 }, // Ngày tạo
+    ];
+
+    wsDetails["!cols"] = [
+      { wch: 12 }, // STT Đánh giá
+      { wch: 12 }, // ID Đánh giá
+      { wch: 12 }, // STT Tiêu chí
+      { wch: 12 }, // ID Tiêu chí
+      { wch: 30 }, // Tên tiêu chí
+      { wch: 40 }, // Mô tả
+      { wch: 15 }, // Loại
+      { wch: 10 }, // Trọng số
+      { wch: 8 },  // Điểm
+      { wch: 40 }, // Nhận xét
+    ];
+
+    // Add worksheets to workbook
+    XLSX.utils.book_append_sheet(wb, wsAssessments, "Tổng quan đánh giá");
+    XLSX.utils.book_append_sheet(wb, wsDetails, "Chi tiết tiêu chí");
+
+    // Generate filename with employee name and current date
+    const fileName = `Danh_gia_${employeeName.replace(/\s+/g, "_")}_${format(new Date(), "dd-MM-yyyy_HH-mm")}.xlsx`;
+
+    // Save file
+    XLSX.writeFile(wb, fileName);
+  };
+
   const employeeName = data?.data?.[0]?.employee?.name || "Nhân viên";
 
   return (
@@ -120,13 +205,24 @@ export default function AssessmentsByEmployeePage() {
                 <p className="text-sm text-gray-500">ID nhân viên: {employeeId}</p>
               </div>
             </div>
-            <button
-              onClick={handleCreateAssessment}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition"
-            >
-              <Plus className="size-4" />
-              Tạo đánh giá mới
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleExportToExcel}
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition cursor-pointer"
+                title="Xuất file Excel"
+              >
+                <FaFileExport className="size-4" />
+                Xuất Excel
+              </button>
+              <button
+                onClick={handleCreateAssessment}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition cursor-pointer"
+              >
+                <Plus className="size-4" />
+                Tạo đánh giá mới
+              </button>
+            </div>
+
           </div>
 
           <div className="bg-white p-6 rounded-lg shadow-sm border">

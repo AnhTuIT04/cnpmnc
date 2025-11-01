@@ -18,11 +18,6 @@ const menuItems = [
     href: "/courses",
   },
   {
-    title: "Học viên",
-    icon: Users,
-    href: "/students",
-  },
-  {
     title: "Đánh giá",
     icon: ClipboardList,
     href: "/assessments",
