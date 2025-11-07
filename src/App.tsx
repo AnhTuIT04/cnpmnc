@@ -1,11 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
-import { ProtectedRoute } from "./components/ProtectedRoute";
-import { GuestRoute } from "./components/GuestRoute";
-import About from "./pages/about";
 import Dashboard from "./pages/dashboard";
 
-import Students from "./pages/students";
 import Reports from "./pages/reports";
 import Settings from "./pages/settings";
 import NotFound from "./pages/not-found";
@@ -16,86 +11,29 @@ import EmployeeList from "./pages/courses";
 import CriteriaPage from "./pages/criteria";
 import AssessmentsPage from "./pages/assessments";
 import { ToastContainer } from "react-toastify";
+import AssessmentsByEmployeePage from "./pages/assessments-by-employee";
+import { AuthProvider } from "./contexts/AuthContext";
+import { ProtectedLayout } from "./components/ProtectedRoute";
+import { GuestLayout } from "./components/GuestRoute";
+
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          <Route
-            path="/"
-            element={
-              <GuestRoute>
-                <LandingPage />
-              </GuestRoute>
-            }
-          />
-          <Route
-            path="/auth/signin"
-            element={
-              <GuestRoute>
-                <SignInPage />
-              </GuestRoute>
-            }
-          />
-          <Route
-            path="/auth/signup"
-            element={
-              <GuestRoute>
-                <SignUpPage />
-              </GuestRoute>
-            }
-          />
-          <Route path="/about" element={<About />} />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/courses"
-            element={
-              <ProtectedRoute>
-                <EmployeeList />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/criteria" element={<CriteriaPage />} />
-          <Route path="/assessments" element={<AssessmentsPage />} />
-          <Route
-            path="/about"
-            element={
-              <ProtectedRoute>
-                <About />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/students"
-            element={
-              <ProtectedRoute>
-                <Students />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/reports"
-            element={
-              <ProtectedRoute>
-                <Reports />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/settings"
-            element={
-              <ProtectedRoute>
-                <Settings />
-              </ProtectedRoute>
-            }
-          />
+          <Route element={<GuestLayout />}>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/auth/signin" element={<SignInPage />} />
+            <Route path="/auth/signup" element={<SignUpPage />} />
+          </Route>
+          <Route element={<ProtectedLayout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/employee" element={<EmployeeList />} />
+            <Route path="/assessments" element={<AssessmentsPage />} />
+            <Route path="/assessments/:employeeId" element={<AssessmentsByEmployeePage />} />
+            <Route path="/reports" element={<Reports />} />
+            <Route path="/settings" element={<Settings />} />
+          </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
         <ToastContainer />

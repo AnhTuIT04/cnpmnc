@@ -3,12 +3,12 @@ import React, { useState, useRef, useEffect } from "react";
 import { MdDeleteForever } from "react-icons/md";
 
 interface Props {
-  onViewDetails: () => void;
+  onViewAssessments?: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }
 
-const EmployeeActionsDropdown: React.FC<Props> = ({ onViewDetails, onEdit, onDelete }) => {
+const EmployeeActionsDropdown: React.FC<Props> = ({ onViewAssessments, onEdit, onDelete }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -25,26 +25,24 @@ const EmployeeActionsDropdown: React.FC<Props> = ({ onViewDetails, onEdit, onDel
 
   return (
     <div className="relative inline-block text-left" ref={ref}>
-      <button
-        onClick={() => setOpen(!open)}
-        className="text-gray-500 hover:text-gray-700 px-2 py-1 cursor-pointer"
-        title="Hành động"
-      >
+      <button onClick={() => setOpen(!open)} className="text-gray-500 hover:text-gray-700 px-2 py-1" title="Hành động">
         ⋮
       </button>
 
       {open && (
         <div className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-gray-200 z-50">
           <div className="py-1 text-sm text-gray-700">
-            <button
-              onClick={() => {
-                onViewDetails();
-                setOpen(false);
-              }}
-              className="w-full text-left px-4 py-2 hover:bg-gray-100"
-            >
-              📄 Thêm đánh giá
-            </button>
+            {onViewAssessments && (
+              <button
+                onClick={() => {
+                  onViewAssessments();
+                  setOpen(false);
+                }}
+                className="w-full text-left px-4 py-2 hover:bg-gray-100"
+              >
+                📋 Xem các đánh giá
+              </button>
+            )}
             <button
               onClick={() => {
                 onEdit();

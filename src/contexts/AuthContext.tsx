@@ -1,28 +1,28 @@
 
 import { createContext, useState, useEffect, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useLogin as useLoginMutation, useSignup as useSignupMutation, useLogout as useLogoutMutation } from '@/hooks/useAuth';
+import { useLogin as useLoginMutation, useLogout as useLogoutMutation } from '@/hooks/useAuth';
+import { userAPI } from '@/lib/api';
 
 export interface User {
     id: string;
-    username: string;
     name?: string;
     email?: string;
+    role?: string;
 }
 
 export interface AuthContextType {
     user: User | null;
     accessToken: string | null;
-    login: (username: string, password: string) => Promise<void>;
-    signup: (name: string, username: string, password: string) => Promise<void>;
+    login: (email: string, password: string) => Promise<void>;
     logout: () => void;
     isAuthenticated: boolean;
     isLoading: boolean;
     isLoginPending: boolean;
-    isSignupPending: boolean;
     isLogoutPending: boolean;
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const TOKEN_KEY = 'access_token';
@@ -36,7 +36,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const navigate = useNavigate();
 
     const loginMutation = useLoginMutation();
-    const signupMutation = useSignupMutation();
     const logoutMutation = useLogoutMutation();
 
     useEffect(() => {
@@ -62,19 +61,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         initializeAuth();
     }, []);
 
-    const login = async (username: string, password: string) => {
-        const data = await loginMutation.mutateAsync({ username, password });
-        setAccessToken(data.accessToken);
-        setUser(data.user);
+    const login = async (email: string, password: string) => {
+        const data = await loginMutation.mutateAsync({ email, password });
+        const token = data.data.accessToken;
+        setAccessToken(token);
+        
+        try {
+            const userProfile = await userAPI.getProfile();
+            const userData = userProfile.data || userProfile;
+            setUser(userData);
+            localStorage.setItem(USER_KEY, JSON.stringify(userData));
+        } catch (error) {
+            console.error('Error fetching user profile:', error);
+        }
+        
         navigate('/dashboard');
     };
 
-    const signup = async (name: string, username: string, password: string) => {
-        const data = await signupMutation.mutateAsync({ name, username, password });
-        setAccessToken(data.accessToken);
-        setUser(data.user);
-        navigate('/dashboard');
-    };
+    
 
     const logout = () => {
         logoutMutation.mutate(undefined, {
@@ -90,12 +94,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         user,
         accessToken,
         login,
-        signup,
         logout,
         isAuthenticated: !!accessToken,
         isLoading,
         isLoginPending: loginMutation.isPending,
-        isSignupPending: signupMutation.isPending,
         isLogoutPending: logoutMutation.isPending,
     };
 

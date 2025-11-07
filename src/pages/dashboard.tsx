@@ -1,51 +1,191 @@
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+import { useState, useMemo } from "react";
 import Sidebar from "@/components/shared/sidebar";
+import type { IEmployeeChartData } from "@/components/EmployeeChart";
+import EmployeeChart from "@/components/EmployeeChart";
+import {
+  Card,
+  CardContent,
+  Typography,
+  Box,
+  TextField,
+  Stack
+} from "@mui/material";
+import { format } from "date-fns";
+import { FileText } from "lucide-react";
+import type { AssessmentResponse } from "@/lib/mockAssessmentData";
+import { mockAssessmentData } from "@/lib/mockAssessmentData";
 
-// Example API call using axios and TanStack Query
-const fetchUserData = async () => {
-  // Replace with your actual API endpoint
-  const response = await axios.get("https://jsonplaceholder.typicode.com/users/1");
-  return response.data;
+const mockEmployeeChartData: IEmployeeChartData[] = [
+  { time: "01-01-2025", value: 65 },
+  { time: "02-01-2025", value: 68 },
+  { time: "03-01-2025", value: 72 },
+  { time: "04-01-2025", value: 70 },
+  { time: "05-01-2025", value: 75 },
+  { time: "06-01-2025", value: 78 },
+  { time: "07-01-2025", value: 80 },
+  { time: "08-01-2025", value: 82 },
+  { time: "09-01-2025", value: 79 },
+  { time: "10-01-2025", value: 85 },
+  { time: "11-01-2025", value: 88 },
+  { time: "12-01-2025", value: 90 },
+  { time: "13-01-2025", value: 87 },
+  { time: "14-01-2025", value: 92 },
+  { time: "15-01-2025", value: 95 },
+  { time: "16-01-2025", value: 93 },
+  { time: "17-01-2025", value: 90 },
+  { time: "18-01-2025", value: 88 },
+  { time: "19-01-2025", value: 85 },
+  { time: "20-01-2025", value: 82 },
+  { time: "21-01-2025", value: 80 },
+  { time: "22-01-2025", value: 78 },
+  { time: "23-01-2025", value: 75 },
+  { time: "24-01-2025", value: 72 },
+  { time: "25-01-2025", value: 70 },
+  { time: "26-01-2025", value: 68 },
+  { time: "27-01-2025", value: 65 },
+  { time: "28-01-2025", value: 70 },
+  { time: "29-01-2025", value: 75 },
+  { time: "30-01-2025", value: 80 },
+  { time: "31-01-2025", value: 85 },
+];
+
+// Get assessments for employee ID 46
+const getEmployeeAssessments = (employeeId: number): AssessmentResponse => {
+  const filtered = mockAssessmentData.data.filter((assessment) => assessment.employee.id === employeeId);
+  return {
+    message: "Success",
+    status: 200,
+    data: filtered,
+  };
 };
 
 export default function Dashboard() {
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["user"],
-    queryFn: fetchUserData,
-  });
+  const [startDate, setStartDate] = useState<string>("2025-01-01");
+  const [endDate, setEndDate] = useState<string>("2025-01-31");
+
+  const filteredData = useMemo(() => {
+    return mockEmployeeChartData.filter((item) => {
+      const itemDate = item.time.split("-").reverse().join("-");
+      return itemDate >= startDate && itemDate <= endDate;
+    });
+  }, [startDate, endDate]);
+
+  // Get assessments for employee ID 46
+  const employeeAssessments = getEmployeeAssessments(46);
 
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
-
-      {/* Main Content */}
       <main className="flex-1 overflow-auto">
-        <div className="p-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-6">Tổng quan</h1>
+        <Box sx={{ p: 4 }}>
+          <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 3, color: '#1a1a1a' }}>
+            Tổng quan
+          </Typography>
 
-          <div className="bg-white p-8 rounded-lg shadow-sm border">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Thông tin người dùng</h2>
+          <Card elevation={2} sx={{ borderRadius: 2 }}>
+            <CardContent>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexDirection: { xs: 'column', md: 'row' },
+                  justifyContent: 'space-between',
+                  alignItems: { xs: 'flex-start', md: 'center' },
+                  gap: 2,
+                  mb: 4
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                    Biểu đồ hiệu suất
+                  </Typography>
+                </Box>
 
-            {isLoading && <p className="text-gray-600">Đang tải...</p>}
+                <Stack direction="row" spacing={2}>
+                  <TextField
+                    label="Ngày bắt đầu"
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    size="small"
+                    sx={{
+                      minWidth: 180,
+                    }}
+                  />
 
-            {error && <p className="text-red-600">Lỗi tải dữ liệu: {error.message}</p>}
+                  <TextField
+                    label="Ngày kết thúc"
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    InputLabelProps={{
+                      shrink: true,
+                    }}
+                    size="small"
+                    sx={{
+                      minWidth: 180,
+                    }}
+                  />
+                </Stack>
+              </Box>
 
-            {data && (
-              <div className="space-y-3">
-                <p className="text-gray-700">
-                  <span className="font-semibold">Tên:</span> {data.name}
-                </p>
-                <p className="text-gray-700">
-                  <span className="font-semibold">Email:</span> {data.email}
-                </p>
-                <p className="text-gray-700">
-                  <span className="font-semibold">Tên đăng nhập:</span> {data.username}
-                </p>
+              <Box sx={{ mt: 2 }}>
+                <EmployeeChart data={filteredData} />
+              </Box>
+            </CardContent>
+          </Card>
+
+          <Card className="mt-6">
+            <div className="p-6 rounded-lg shadow-sm border">
+              <div className="flex items-center gap-3 mb-4">
+                <FileText className="size-6 text-blue-600" />
+                <h2 className="text-xl font-semibold text-gray-800">
+                  Đánh giá của {employeeAssessments.data[0]?.employee?.name || "Nhân viên"} (ID: 46)
+                </h2>
               </div>
-            )}
-          </div>
-        </div>
+
+              {employeeAssessments.data.length === 0 ? (
+                <div className="text-center py-8">
+                  <FileText className="size-12 text-gray-300 mx-auto mb-2" />
+                  <p className="text-gray-600">Chưa có đánh giá nào</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm text-gray-700 border border-gray-200 rounded-lg">
+                    <thead className="bg-gray-100 text-xs text-gray-600 uppercase tracking-wide">
+                      <tr>
+                        <th className="px-4 py-3 text-center">STT</th>
+                        <th className="px-4 py-3 text-center">Tổng điểm</th>
+                        <th className="px-4 py-3 text-center">Số tiêu chí</th>
+                        <th className="px-4 py-3 text-left">Ngày tạo</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {employeeAssessments.data.map((assessment, index) => (
+                        <tr key={assessment.assessmentId} className="border-t hover:bg-gray-50 transition">
+                          <td className="px-4 py-3 text-center font-medium text-gray-900">{index + 1}</td>
+                          <td className="px-4 py-3 text-center">
+                            <span className="text-lg font-bold text-blue-600">{assessment.totalScore.toFixed(2)}</span>
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded-md font-medium">
+                              {assessment.criteriaScores.length}
+                            </span>
+                          </td>
+                          <td className="px-4 py-3 text-gray-600">
+                            {format(new Date(assessment.createdAt), "dd/MM/yyyy HH:mm")}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </Card>
+        </Box>
       </main>
     </div>
   );

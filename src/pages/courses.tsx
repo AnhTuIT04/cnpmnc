@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { FaPlus, FaSearch } from "react-icons/fa";
 import { Plus, X } from "lucide-react";
 import { format } from "date-fns";
+import { useNavigate } from "react-router-dom";
 import EmployeeActionsDropdown from "@/components/Employee.Drop/EmployeeDropDown";
 import Sidebar from "@/components/shared/sidebar";
 import { useQuery } from "@tanstack/react-query";
@@ -59,6 +60,7 @@ interface AssessmentFormData {
 }
 
 const EmployeeList: React.FC = () => {
+  const navigate = useNavigate();
   const [employees] = useState<Employee[]>(dummyEmployees);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -82,6 +84,14 @@ const EmployeeList: React.FC = () => {
   });
 
   const criteriaList: CriteriaType[] = criteriaData?.payload?.data || [];
+
+  const handleViewAssessments = (employeeId: string) => {
+    // Map employee ID to assessment employee ID
+    // Since employee IDs are strings like "EMP001", we need to map them
+    // For now, we'll use a simple mapping or extract number from ID
+    const numericId = parseInt(employeeId.replace("EMP", "")) + 44; // Map EMP001 -> 45, EMP002 -> 46, etc.
+    navigate(`/assessments/${numericId}`);
+  };
 
   const filtered = employees
     .filter(
@@ -172,9 +182,9 @@ const EmployeeList: React.FC = () => {
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
 
-      <main className="flex-1 overflow-auto">
-        <div className="p-8">
-          <div className="p-6 bg-white shadow-lg rounded-xl max-w-full">
+      <main className="flex-1 overflow-y-hidden">
+        <div className="p-8  h-screen ">
+          <div className="p-6 bg-white shadow-lg rounded-xl max-w-full h-screen">
             <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
               <h2 className="text-2xl font-bold text-gray-800">Danh sách nhân viên</h2>
               <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition">
@@ -258,7 +268,7 @@ const EmployeeList: React.FC = () => {
                       <td className="px-4 py-3">{format(emp.joinedAt, "dd/MM/yyyy")}</td>
                       <td className="px-4 py-3 text-center">
                         <EmployeeActionsDropdown
-                          onViewDetails={() => handleOpenAssessmentModal(emp.id)}
+                          onViewAssessments={() => handleViewAssessments(emp.id)}
                           onEdit={() => alert(`Chỉnh sửa ${emp.name}`)}
                           onDelete={() => confirm(`Bạn chắc chắn muốn xoá ${emp.name}?`)}
                         />
