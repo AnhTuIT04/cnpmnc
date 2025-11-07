@@ -1,4 +1,4 @@
-import { Users, FileText, Settings, LayoutDashboard, GraduationCap, ClipboardList } from "lucide-react";
+import { Users, FileText, Settings, LayoutDashboard, ClipboardList } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import LogoHeader from "../LogoHeader";

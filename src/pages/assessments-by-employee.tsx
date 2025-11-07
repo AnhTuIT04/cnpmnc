@@ -122,7 +122,19 @@ export default function AssessmentsByEmployeePage() {
     }));
 
     // Prepare detailed criteria scores data
-    const detailedData: any[] = [];
+    interface DetailedCriteriaData {
+      "STT Đánh giá": number;
+      "ID Đánh giá": number;
+      "STT Tiêu chí": number;
+      "ID Tiêu chí": number;
+      "Tên tiêu chí": string;
+      "Mô tả": string;
+      "Loại": string;
+      "Trọng số": number;
+      "Điểm": number;
+      "Nhận xét": string;
+    }
+    const detailedData: DetailedCriteriaData[] = [];
     data.data.forEach((assessment, assessmentIndex) => {
       assessment.criteriaScores.forEach((criteriaScore, criteriaIndex) => {
         detailedData.push({
