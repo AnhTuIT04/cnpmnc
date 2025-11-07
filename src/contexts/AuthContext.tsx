@@ -1,7 +1,7 @@
 
 import { createContext, useState, useEffect, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useLogin as useLoginMutation, useSignup as useSignupMutation, useLogout as useLogoutMutation } from '@/hooks/useAuth';
+import { useLogin as useLoginMutation, useLogout as useLogoutMutation } from '@/hooks/useAuth';
 import { userAPI } from '@/lib/api';
 
 export interface User {
@@ -15,12 +15,10 @@ export interface AuthContextType {
     user: User | null;
     accessToken: string | null;
     login: (email: string, password: string) => Promise<void>;
-    signup: (name: string, email: string, password: string) => Promise<void>;
     logout: () => void;
     isAuthenticated: boolean;
     isLoading: boolean;
     isLoginPending: boolean;
-    isSignupPending: boolean;
     isLogoutPending: boolean;
 }
 
@@ -38,7 +36,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const navigate = useNavigate();
 
     const loginMutation = useLoginMutation();
-    const signupMutation = useSignupMutation();
     const logoutMutation = useLogoutMutation();
 
     useEffect(() => {
@@ -81,22 +78,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         navigate('/dashboard');
     };
 
-    const signup = async (name: string, email: string, password: string) => {
-        const data = await signupMutation.mutateAsync({ name, email, password });
-        const token = data.data.accessToken;
-        setAccessToken(token);
-        
-        try {
-            const userProfile = await userAPI.getProfile();
-            const userData = userProfile.data || userProfile;
-            setUser(userData);
-            localStorage.setItem(USER_KEY, JSON.stringify(userData));
-        } catch (error) {
-            console.error('Error fetching user profile:', error);
-        }
-        
-        navigate('/dashboard');
-    };
+    
 
     const logout = () => {
         logoutMutation.mutate(undefined, {
@@ -112,12 +94,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         user,
         accessToken,
         login,
-        signup,
         logout,
         isAuthenticated: !!accessToken,
         isLoading,
         isLoginPending: loginMutation.isPending,
-        isSignupPending: signupMutation.isPending,
         isLogoutPending: logoutMutation.isPending,
     };
 
