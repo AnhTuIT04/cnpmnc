@@ -6,7 +6,20 @@ import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined
 import { useSearchParams } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteCriteria } from "@/service/api/criteria/delete";
+import { createCriteria } from "@/service/api/criteria/create";
 import { toast } from "react-toastify";
+
+// Map weight number to label (priority/importance levels)
+const getWeightLabel = (weight: number): string => {
+  const weightMap: Record<number, string> = {
+    1: "Ít quan trọng",
+    2: "Quan trọng",
+    3: "Khá quan trọng",
+    4: "Rất quan trọng",
+    5: "Cực kỳ quan trọng",
+  };
+  return weightMap[weight] || weight.toString();
+};
 
 interface CriteriaListProps {
   criteriaList?: Criteria[];
@@ -16,10 +29,9 @@ interface CriteriaListProps {
     currentPage: number;
     size: number;
   };
-  onAddCriteria?: (criteria: Omit<Criteria, "criteriaId">) => void;
 }
 
-export const CriteriaList = ({ criteriaList = [], pagination, onAddCriteria }: CriteriaListProps) => {
+export const CriteriaList = ({ criteriaList = [], pagination }: CriteriaListProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
   const searchTextFromUrl = searchParams.get("searchText") || "";
   const pageFromUrl = Number(searchParams.get("page")) || 1;
@@ -128,12 +140,28 @@ export const CriteriaList = ({ criteriaList = [], pagination, onAddCriteria }: C
     });
   };
 
+  // Mutation để tạo criteria
+  const createMutation = useMutation({
+    mutationFn: (data: { name: string; description: string; weight: number; category: "HARDSKILL" | "SOFTSKILL" }) => {
+      return createCriteria(data);
+    },
+    onSuccess: () => {
+      toast.success("Tạo tiêu chí thành công!");
+      // Invalidate và refetch tất cả queries có prefix ["criteria"]
+      queryClient.invalidateQueries({ queryKey: ["criteria"] });
+      handleChangePage(1); // Reset về trang đầu để thấy item mới
+      handleCloseModal();
+    },
+    onError: (error) => {
+      toast.error(`Lỗi khi tạo tiêu chí: ${error instanceof Error ? error.message : "Có lỗi xảy ra"}`);
+      console.error("Create error:", error);
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.name.trim() && formData.description.trim()) {
-      onAddCriteria?.(formData);
-      handleChangePage(1); // Reset về trang đầu để thấy item mới
-      handleCloseModal();
+      createMutation.mutate(formData);
     }
   };
 
@@ -249,38 +277,44 @@ export const CriteriaList = ({ criteriaList = [], pagination, onAddCriteria }: C
             </tr>
           </thead>
           <tbody>
-            {currentData.map((criteria, index) => (
-              <tr key={criteria.criteriaId} className="border-t hover:bg-gray-50 transition">
-                <td className="px-4 py-3">{(pageFromUrl - 1) * perPage + index + 1}</td>
-                <td className="px-4 py-3 font-medium">{criteria.name}</td>
-                <td className="px-4 py-3">{criteria.description}</td>
-                <td className="px-4 py-3 text-center">
-                  <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-700 border border-indigo-200">
-                    {criteria.weight.toString()}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <span
-                    className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${
-                      criteria.category === "SOFTSKILL"
-                        ? "bg-amber-100 text-amber-700 border border-amber-200"
-                        : "bg-teal-100 text-teal-700 border border-teal-200"
-                    }`}
-                  >
-                    {criteria.category}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <Tooltip title="Xóa tiêu chí">
-                    <DeleteOutlineOutlinedIcon
-                      onClick={() => handleOpenDeleteModal(criteria)}
-                      className="text-red-600 hover:text-red-800 transition-colors"
-                      style={{ fontSize: 20, cursor: "pointer" }}
-                    />
-                  </Tooltip>
-                </td>
-              </tr>
-            ))}
+            {currentData.map((criteria, index) => {
+              // Calculate STT based on pagination from API
+              const stt = pagination
+                ? (pagination.currentPage - 1) * pagination.size + index + 1
+                : (pageFromUrl - 1) * perPage + index + 1;
+              return (
+                <tr key={criteria.criteriaId} className="border-t hover:bg-gray-50 transition">
+                  <td className="px-4 py-3">{stt}</td>
+                  <td className="px-4 py-3 font-medium">{criteria.name}</td>
+                  <td className="px-4 py-3">{criteria.description}</td>
+                  <td className="px-4 py-3 text-center">
+                    <span className="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-indigo-100 text-indigo-700 border border-indigo-200">
+                      {getWeightLabel(criteria.weight)}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <span
+                      className={`inline-block px-3 py-1 text-xs font-semibold rounded-full ${
+                        criteria.category === "SOFTSKILL"
+                          ? "bg-amber-100 text-amber-700 border border-amber-200"
+                          : "bg-teal-100 text-teal-700 border border-teal-200"
+                      }`}
+                    >
+                      {criteria.category}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <Tooltip title="Xóa tiêu chí">
+                      <DeleteOutlineOutlinedIcon
+                        onClick={() => handleOpenDeleteModal(criteria)}
+                        className="text-red-600 hover:text-red-800 transition-colors"
+                        style={{ fontSize: 20, cursor: "pointer" }}
+                      />
+                    </Tooltip>
+                  </td>
+                </tr>
+              );
+            })}
             {currentData.length === 0 && (
               <tr>
                 <td colSpan={6} className="text-center text-gray-400 py-6">
@@ -360,15 +394,18 @@ export const CriteriaList = ({ criteriaList = [], pagination, onAddCriteria }: C
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Trọng số <span className="text-red-500">*</span>
                   </label>
-                  <input
-                    type="number"
+                  <select
                     required
-                    min="1"
-                    max="10"
                     value={formData.weight}
                     onChange={(e) => setFormData({ ...formData, weight: Number(e.target.value) })}
                     className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
+                  >
+                    <option value="1">Ít quan trọng</option>
+                    <option value="2">Quan trọng</option>
+                    <option value="3">Khá quan trọng</option>
+                    <option value="4">Rất quan trọng</option>
+                    <option value="5">Cực kỳ quan trọng</option>
+                  </select>
                 </div>
 
                 <div>
@@ -395,15 +432,17 @@ export const CriteriaList = ({ criteriaList = [], pagination, onAddCriteria }: C
                   <button
                     type="button"
                     onClick={handleCloseModal}
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition"
+                    disabled={createMutation.isPending}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Hủy
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition"
+                    disabled={createMutation.isPending}
+                    className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Thêm tiêu chí
+                    {createMutation.isPending ? "Đang tạo..." : "Thêm tiêu chí"}
                   </button>
                 </div>
               </form>

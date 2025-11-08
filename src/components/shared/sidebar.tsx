@@ -65,9 +65,12 @@ const Sidebar = () => {
           const key = item.href ?? item.title;
 
           if (item.href) {
+            // Special handling for /assessments/:id - don't active "Đánh giá" menu
             const isActive =
               item.href === "/"
                 ? location.pathname === "/"
+                : item.href === "/assessments"
+                ? location.pathname === item.href // Only active if exact match, not for /assessments/:id
                 : location.pathname === item.href || location.pathname.startsWith(`${item.href}/`);
 
             return (

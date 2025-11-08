@@ -255,7 +255,6 @@ const EmployeePage: React.FC = () => {
                       <td className="px-4 py-3 text-center">
                         <EmployeeActionsDropdown
                           onViewAssessments={() => handleViewAssessments(emp.id)}
-                          onEdit={() => alert(`Chỉnh sửa ${emp.name}`)}
                           onDelete={() => confirm(`Bạn chắc chắn muốn xoá ${emp.name}?`)}
                         />
                       </td>

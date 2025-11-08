@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaPlus, FaSearch } from "react-icons/fa";
+import { FaSearch } from "react-icons/fa";
 import { Plus, X, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import EmployeeActionsDropdown from "@/components/Employee.Drop/EmployeeDropDown";
@@ -140,9 +140,6 @@ const EmployeeList: React.FC = () => {
           <div className="p-6 bg-white shadow-lg rounded-xl max-w-full h-screen">
             <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 gap-4">
               <h2 className="text-2xl font-bold text-gray-800">Danh sách nhân viên</h2>
-              <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition">
-                <FaPlus /> Thêm nhân viên
-              </button>
             </div>
 
             {/* Controls */}
@@ -212,8 +209,12 @@ const EmployeeList: React.FC = () => {
                           <td className="px-4 py-3 text-center">
                             <EmployeeActionsDropdown
                               onViewAssessments={() => handleViewAssessments(emp.id)}
-                              onEdit={() => alert(`Chỉnh sửa ${emp.name}`)}
-                              onDelete={() => confirm(`Bạn chắc chắn muốn xoá ${emp.name}?`)}
+                              onDelete={() => {
+                                if (confirm(`Bạn chắc chắn muốn xoá ${emp.name}?`)) {
+                                  // TODO: Call API to delete employee
+                                  alert("Chức năng xóa đang được phát triển");
+                                }
+                              }}
                             />
                           </td>
                         </tr>
@@ -234,6 +235,9 @@ const EmployeeList: React.FC = () => {
                       <div className="text-sm text-gray-600">
                         Hiển thị {(page - 1) * perPage + 1} - {Math.min(page * perPage, totalElements)} trong tổng số{" "}
                         {totalElements} nhân viên
+                        {search && filtered.length !== employees.length && (
+                          <span className="ml-2 text-blue-600">(Tìm thấy {filtered.length} kết quả phù hợp)</span>
+                        )}
                       </div>
                       <div className="flex gap-2">
                         <button
@@ -290,9 +294,14 @@ const EmployeeList: React.FC = () => {
                     type="text"
                     required
                     value={formData.employeeId}
-                    disabled
+                    readOnly
                     className="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-100 text-gray-600 cursor-not-allowed"
                   />
+                  {formData.employeeId && (
+                    <p className="mt-1 text-xs text-gray-500">
+                      Nhân viên: {employees.find((e) => e.id.toString() === formData.employeeId)?.name || "N/A"}
+                    </p>
+                  )}
                 </div>
 
                 <div className="border-t pt-4">

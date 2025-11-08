@@ -4,11 +4,10 @@ import { MdDeleteForever } from "react-icons/md";
 
 interface Props {
   onViewAssessments?: () => void;
-  onEdit: () => void;
   onDelete: () => void;
 }
 
-const EmployeeActionsDropdown: React.FC<Props> = ({ onViewAssessments, onEdit, onDelete }) => {
+const EmployeeActionsDropdown: React.FC<Props> = ({ onViewAssessments, onDelete }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -43,15 +42,6 @@ const EmployeeActionsDropdown: React.FC<Props> = ({ onViewAssessments, onEdit, o
                 📋 Xem các đánh giá
               </button>
             )}
-            <button
-              onClick={() => {
-                onEdit();
-                setOpen(false);
-              }}
-              className="w-full text-left px-4 py-2 hover:bg-gray-100"
-            >
-              ✏️ Chỉnh sửa thông tin
-            </button>
             <button
               onClick={() => {
                 onDelete();
