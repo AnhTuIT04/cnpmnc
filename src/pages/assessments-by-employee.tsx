@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Sidebar from "@/components/shared/sidebar";
 import { format } from "date-fns";
 import { FileText, Loader2, Plus, Edit, ArrowLeft, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getAssessmentsByEmployee } from "@/service/api/assessments/get-by-employee";
 import { FaFileExport } from "react-icons/fa";
@@ -326,8 +326,11 @@ export default function AssessmentsByEmployeePage() {
       return;
     }
 
+    // Use reversed assessments for export (newest first)
+    const assessmentsToExport = [...data.data].reverse();
+
     // Prepare main assessments data
-    const assessmentsData = data.data.map((assessment, index) => ({
+    const assessmentsData = assessmentsToExport.map((assessment, index) => ({
       STT: index + 1,
       "ID Đánh giá": assessment.assessmentId,
       "Tên nhân viên": assessment.employee.name,
@@ -362,7 +365,7 @@ export default function AssessmentsByEmployeePage() {
       "Nhận xét": string;
     }
     const detailedData: DetailedCriteriaData[] = [];
-    data.data.forEach((assessment, assessmentIndex) => {
+    assessmentsToExport.forEach((assessment, assessmentIndex) => {
       assessment.criteriaScores.forEach((criteriaScore, criteriaIndex) => {
         detailedData.push({
           "STT Đánh giá": assessmentIndex + 1,
@@ -420,7 +423,13 @@ export default function AssessmentsByEmployeePage() {
     XLSX.writeFile(wb, fileName);
   };
 
-  const employeeName = data?.data?.[0]?.employee?.name || "Nhân viên";
+  // Reverse assessments to show newest first
+  const reversedAssessments = useMemo(() => {
+    if (!data?.data) return [];
+    return [...data.data].reverse();
+  }, [data?.data]);
+
+  const employeeName = reversedAssessments?.[0]?.employee?.name || data?.data?.[0]?.employee?.name || "Nhân viên";
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -514,7 +523,7 @@ export default function AssessmentsByEmployeePage() {
 
             {!isLoading && (
               <>
-                {!data || !data.data || data.data.length === 0 ? (
+                {!reversedAssessments || reversedAssessments.length === 0 ? (
                   <div className="text-center py-12">
                     <FileText className="size-16 text-gray-300 mx-auto mb-4" />
                     <p className="text-gray-600 text-lg mb-4">Chưa có đánh giá nào cho nhân viên này</p>
@@ -540,7 +549,7 @@ export default function AssessmentsByEmployeePage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {data.data.map((assessment, index) => {
+                        {reversedAssessments.map((assessment, index) => {
                           const isExpanded = expandedRows.has(assessment.assessmentId);
                           return (
                             <>
@@ -561,16 +570,7 @@ export default function AssessmentsByEmployeePage() {
                                   {format(new Date(assessment.createdAt), "dd/MM/yyyy HH:mm")}
                                 </td>
                                 <td className="px-4 py-3 text-center">
-                                  <div className="flex items-center justify-center gap-2">
-                                    {assessment.status !== "Published" && (
-                                      <button
-                                        onClick={() => handleOpenStatusModal(assessment)}
-                                        className="flex items-center gap-1 px-3 py-1.5 text-sm text-purple-600 hover:bg-purple-50 rounded-md transition"
-                                        title="Cập nhật trạng thái"
-                                      >
-                                        <span>Cập nhật trạng thái</span>
-                                      </button>
-                                    )}
+                                  <div className="flex items-center justify-start gap-2">
                                     <button
                                       onClick={() => handleOpenEditModal(assessment)}
                                       className="flex items-center gap-1 px-3 py-1.5 text-sm text-green-600 hover:bg-green-50 rounded-md transition"
@@ -586,6 +586,15 @@ export default function AssessmentsByEmployeePage() {
                                     >
                                       {isExpanded ? "Thu gọn" : "Chi tiết"}
                                     </button>
+                                    {assessment.status !== "Published" && (
+                                      <button
+                                        onClick={() => handleOpenStatusModal(assessment)}
+                                        className="flex items-center gap-1 px-3 py-1.5 text-sm text-purple-600 hover:bg-purple-50 rounded-md transition"
+                                        title="Cập nhật trạng thái"
+                                      >
+                                        <span>Cập nhật trạng thái</span>
+                                      </button>
+                                    )}
                                   </div>
                                 </td>
                               </tr>

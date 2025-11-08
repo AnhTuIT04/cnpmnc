@@ -84,18 +84,24 @@ export default function Dashboard() {
     });
   }, [chartData, startDate, endDate]);
 
+  // Reverse assessments to show newest first
+  const reversedAssessments = useMemo(() => {
+    if (!employeeAssessments) return [];
+    return [...employeeAssessments].reverse();
+  }, [employeeAssessments]);
+
   // Pagination logic
   const paginatedAssessments = useMemo(() => {
-    if (!employeeAssessments) return [];
+    if (!reversedAssessments) return [];
     const startIndex = (page - 1) * rowsPerPage;
     const endIndex = startIndex + rowsPerPage;
-    return employeeAssessments.slice(startIndex, endIndex);
-  }, [employeeAssessments, page, rowsPerPage]);
+    return reversedAssessments.slice(startIndex, endIndex);
+  }, [reversedAssessments, page, rowsPerPage]);
 
   const totalPages = useMemo(() => {
-    if (!employeeAssessments) return 0;
-    return Math.ceil(employeeAssessments.length / rowsPerPage);
-  }, [employeeAssessments, rowsPerPage]);
+    if (!reversedAssessments) return 0;
+    return Math.ceil(reversedAssessments.length / rowsPerPage);
+  }, [reversedAssessments, rowsPerPage]);
 
   const handleToggleExpand = (assessmentId: number) => {
     setExpandedRows((prev) => {
