@@ -102,19 +102,19 @@ const EmployeeList: React.FC = () => {
 
   const currentData = filtered.slice((page - 1) * perPage, page * perPage);
 
-  const handleOpenAssessmentModal = (employeeId: string) => {
-    setFormData({
-      employeeId: employeeId,
-      scores: [
-        {
-          criteriaId: 0,
-          score: 0,
-          comment: "",
-        },
-      ],
-    });
-    setIsModalOpen(true);
-  };
+  // const handleOpenAssessmentModal = (employeeId: string) => {
+  //   setFormData({
+  //     employeeId: employeeId,
+  //     scores: [
+  //       {
+  //         criteriaId: 0,
+  //         score: 0,
+  //         comment: "",
+  //       },
+  //     ],
+  //   });
+  //   setIsModalOpen(true);
+  // };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
