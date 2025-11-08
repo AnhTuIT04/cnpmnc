@@ -21,6 +21,18 @@ export const GuestLayout = () => {
     }
 
     if (isAuthenticated) {
+        // Redirect based on role
+        const storedUser = localStorage.getItem('user_data');
+        if (storedUser) {
+            try {
+                const userData = JSON.parse(storedUser);
+                if (userData.role === 'SUPERVISOR') {
+                    return <Navigate to="/employee" replace />;
+                }
+            } catch (error) {
+                console.error('Error parsing user data:', error);
+            }
+        }
         return <Navigate to="/dashboard" replace />;
     }
 

@@ -71,11 +71,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             const userData = userProfile.data || userProfile;
             setUser(userData);
             localStorage.setItem(USER_KEY, JSON.stringify(userData));
+            
+            // Redirect based on role
+            if (userData.role === 'SUPERVISOR') {
+                navigate('/employee');
+            } else {
+                navigate('/dashboard');
+            }
         } catch (error) {
             console.error('Error fetching user profile:', error);
+            navigate('/dashboard');
         }
-        
-        navigate('/dashboard');
     };
 
     

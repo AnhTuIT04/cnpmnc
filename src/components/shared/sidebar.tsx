@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import LogoHeader from "../LogoHeader";
 import { useAuth } from "@/hooks/useAuthContext";
+import { useMemo } from "react";
 
 type MenuItem =
   | { title: string; icon: typeof LayoutDashboard; href: string; onClick?: never }
@@ -12,9 +13,29 @@ const Sidebar = () => {
   const location = useLocation();
   const { user, logout } = useAuth();
 
+  // Get user role from localStorage immediately (synchronous) to avoid flash
+  const userRole = useMemo(() => {
+    // First try to get from context (most up-to-date)
+    if (user?.role) {
+      return user.role;
+    }
+    // Fallback to localStorage (available immediately on mount)
+    try {
+      const storedUser = localStorage.getItem("user_data");
+      if (storedUser) {
+        const userData = JSON.parse(storedUser);
+        return userData.role;
+      }
+    } catch (error) {
+      console.error("Error parsing user data:", error);
+    }
+    return undefined;
+  }, [user?.role]);
+
   const displayName = user?.name || user?.email || "Người dùng";
-  const displayRole = user?.role;
+  const displayRole = userRole;
   const isEmployee = displayRole === "EMPLOYEE";
+  const isSupervisor = displayRole === "SUPERVISOR";
 
   const allMenuItems: MenuItem[] = [
     {
@@ -57,7 +78,9 @@ const Sidebar = () => {
   // Filter menu items based on role
   const menuItems: MenuItem[] = isEmployee
     ? allMenuItems.filter((item) => item.title === "Tổng quan" || item.title === "Đăng xuất")
-    : allMenuItems;
+    : isSupervisor
+      ? allMenuItems.filter((item) => item.title !== "Tổng quan")
+      : allMenuItems;
 
   return (
     <aside className="flex h-screen w-64 flex-col border-r bg-white">

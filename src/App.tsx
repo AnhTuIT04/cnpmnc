@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Dashboard from "./pages/Dashboard/dashboard";
 
 import ReportPage from "./pages/Report";
@@ -14,6 +14,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedLayout } from "./components/ProtectedRoute";
 import { GuestLayout } from "./components/GuestRoute";
 import CriteriaPage from "./pages/criteria";
+import { DashboardRoute } from "./components/DashboardRoute";
 
 function App() {
   return (
@@ -26,7 +27,7 @@ function App() {
             <Route path="/auth/signup" element={<SignUpPage />} />
           </Route>
           <Route element={<ProtectedLayout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard" element={<DashboardRoute />} />
             <Route path="/employee" element={<EmployeeList />} />
             <Route path="/assessments" element={<AssessmentsPage />} />
             <Route path="/criteria" element={<CriteriaPage />} />
