@@ -60,9 +60,10 @@ const Sidebar = () => {
           const key = item.href ?? item.title;
 
           if (item.href) {
-            const isActive = item.href === '/'
-              ? location.pathname === '/'
-              : location.pathname === item.href || location.pathname.startsWith(`${item.href}/`);
+            const isActive =
+              item.href === "/"
+                ? location.pathname === "/"
+                : location.pathname === item.href || location.pathname.startsWith(`${item.href}/`);
 
             return (
               <Link
@@ -102,9 +103,7 @@ const Sidebar = () => {
           />
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-gray-900 truncate">{displayName}</p>
-            {displayRole && (
-              <p className="text-xs text-gray-500 truncate">{displayRole}</p>
-            )}
+            {displayRole && <p className="text-xs text-gray-500 truncate">{displayRole}</p>}
           </div>
         </div>
       </div>

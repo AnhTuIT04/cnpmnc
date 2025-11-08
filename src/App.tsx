@@ -8,7 +8,9 @@ import LandingPage from "./pages/Landing";
 import SignInPage from "./pages/auth/signin";
 import SignUpPage from "./pages/auth/signup";
 import EmployeeList from "./pages/courses";
+import CriteriaPage from "./pages/criteria";
 import AssessmentsPage from "./pages/assessments";
+import { ToastContainer } from "react-toastify";
 import AssessmentsByEmployeePage from "./pages/assessments-by-employee";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedLayout } from "./components/ProtectedRoute";
@@ -34,6 +36,7 @@ function App() {
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
+        <ToastContainer />
       </AuthProvider>
     </BrowserRouter>
   );

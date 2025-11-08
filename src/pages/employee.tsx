@@ -59,7 +59,7 @@ interface AssessmentFormData {
   scores: ScoreFormData[];
 }
 
-const EmployeeList: React.FC = () => {
+const EmployeePage: React.FC = () => {
   const navigate = useNavigate();
   const [employees] = useState<Employee[]>(dummyEmployees);
   const [search, setSearch] = useState("");
@@ -101,20 +101,6 @@ const EmployeeList: React.FC = () => {
     .filter((emp) => statusFilter === "All" || emp.status === statusFilter);
 
   const currentData = filtered.slice((page - 1) * perPage, page * perPage);
-
-  const handleOpenAssessmentModal = (employeeId: string) => {
-    setFormData({
-      employeeId: employeeId,
-      scores: [
-        {
-          criteriaId: 0,
-          score: 0,
-          comment: "",
-        },
-      ],
-    });
-    setIsModalOpen(true);
-  };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
@@ -430,4 +416,4 @@ const EmployeeList: React.FC = () => {
   );
 };
 
-export default EmployeeList;
+export default EmployeePage;
