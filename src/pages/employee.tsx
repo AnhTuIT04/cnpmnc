@@ -83,7 +83,7 @@ const EmployeePage: React.FC = () => {
     queryFn: () => getCriteriaList({}),
   });
 
-  const criteriaList: CriteriaType[] = criteriaData?.payload?.data || [];
+  const criteriaList: CriteriaType[] = criteriaData?.data || [];
 
   const handleViewAssessments = (employeeId: string) => {
     // Map employee ID to assessment employee ID

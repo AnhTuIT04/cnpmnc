@@ -1,6 +1,5 @@
 import apiClient from "@/lib/axios";
 import type { AssessmentResponse } from "../get-supervisor/types";
-import { mockAssessmentData } from "@/lib/mockAssessmentData";
 
 const URL_BASE = "/assessments/supervisor";
 

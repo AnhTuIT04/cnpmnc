@@ -52,7 +52,7 @@ const EmployeeList: React.FC = () => {
     queryFn: () => getEmployeeList({ page: page - 1, size: perPage }), // Convert to 0-based page
   });
 
-  const criteriaList: CriteriaType[] = criteriaData?.payload?.data || [];
+  const criteriaList: CriteriaType[] = criteriaData?.data || [];
   const employees: Employee[] = employeeData?.content || [];
   const totalPages = employeeData?.totalPages || 0;
   const totalElements = employeeData?.totalElements || 0;
@@ -68,20 +68,6 @@ const EmployeeList: React.FC = () => {
       emp.email.toLowerCase().includes(search.toLowerCase()) ||
       emp.id.toString().includes(search),
   );
-
-  // const handleOpenAssessmentModal = (employeeId: string) => {
-  //   setFormData({
-  //     employeeId: employeeId,
-  //     scores: [
-  //       {
-  //         criteriaId: 0,
-  //         score: 0,
-  //         comment: "",
-  //       },
-  //     ],
-  //   });
-  //   setIsModalOpen(true);
-  // };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);

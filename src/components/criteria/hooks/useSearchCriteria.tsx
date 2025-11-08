@@ -7,11 +7,9 @@ import { getCriteriaList } from "@/service/api/criteria/get-list";
 export const useSearchCriteria = () => {
   const { searchText, page } = useRouterParam();
 
-  const request: SearchCriteriaParams = {
+  const [searchParams, setSearchParams] = useState<SearchCriteriaParams>({
     page: page,
-    searchText: "",
-  };
-  const [searchParams, setSearchParams] = useState<SearchCriteriaParams>(request);
+  });
 
   const queryFn = useCallback(() => {
     return getCriteriaList(searchParams);
@@ -20,9 +18,10 @@ export const useSearchCriteria = () => {
   useEffect(() => {
     const request: SearchCriteriaParams = {
       page: page,
+      limit: 5,
     };
-    if (searchText) {
-      request.searchText = searchText;
+    if (searchText && searchText.trim() !== "") {
+      request.searchText = searchText.trim();
     }
 
     setSearchParams(request);
@@ -35,7 +34,19 @@ export const useSearchCriteria = () => {
     staleTime: 1000 * 60 * 5,
   });
 
-  return { data, isLoading, error };
+  return {
+    data: data?.data || [],
+    pagination: data
+      ? {
+          totalPages: data.totalPages,
+          totalElements: data.totalElements,
+          currentPage: data.currentPage,
+          size: data.size,
+        }
+      : undefined,
+    isLoading,
+    error,
+  };
 
   // const { } = useQuery([
   //     key:[]

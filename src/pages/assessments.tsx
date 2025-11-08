@@ -137,10 +137,7 @@ export default function AssessmentsPage() {
     }
   };
 
-  const criteriaList: CriteriaType[] = criteriaData?.payload?.data || [];
-  console.log("data", data);
-  console.log(isLoading);
-  console.log(error);
+  const criteriaList: CriteriaType[] = criteriaData?.data || [];
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
