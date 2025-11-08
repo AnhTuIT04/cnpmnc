@@ -22,7 +22,7 @@ import {
   Paper
 } from "@mui/material";
 import { format } from "date-fns";
-import { FileText, Loader2, ChevronDown, ChevronUp, Users, ClipboardList, TrendingUp, Award } from "lucide-react";
+import { FileText, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { useEmployeeAssessments, useDashboardData } from "./api";
 import { useAuth } from "@/hooks/useAuthContext";
 
