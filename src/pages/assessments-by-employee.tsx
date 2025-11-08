@@ -1,56 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import Sidebar from "@/components/shared/sidebar";
 import { format } from "date-fns";
 import { FileText, Loader2, Plus, Edit, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import type { AssessmentResponse } from "@/lib/mockAssessmentData";
-import { mockAssessmentData } from "@/lib/mockAssessmentData";
+import { getAssessmentsByEmployee } from "@/service/api/assessments/get-by-employee";
 import { FaFileExport } from "react-icons/fa";
 import * as XLSX from "xlsx";
-
-// API function to fetch assessments for a specific employee
-const fetchEmployeeAssessments = async (employeeId: number): Promise<AssessmentResponse> => {
-  try {
-    const response = await axios.get<unknown>(`/api/assessments/employee/${employeeId}`, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    if (typeof response.data === "string" || response.data === null || response.data === undefined) {
-      console.warn("API returned HTML or invalid response, using mock data");
-      return filterMockDataByEmployee(employeeId);
-    }
-
-    const data = response.data as AssessmentResponse;
-    if (data && typeof data === "object" && "data" in data && Array.isArray(data.data)) {
-      return data;
-    }
-
-    console.warn("API returned invalid response structure, using mock data");
-    return filterMockDataByEmployee(employeeId);
-  } catch (error) {
-    console.warn("API call failed, using mock data:", error);
-    return filterMockDataByEmployee(employeeId);
-  }
-};
-
-// Filter mock data by employee ID
-const filterMockDataByEmployee = (employeeId: number): AssessmentResponse => {
-  const filtered = mockAssessmentData.data.filter((assessment) => assessment.employee.id === employeeId);
-  return {
-    message: "Success",
-    status: 200,
-    data: filtered,
-  };
-};
 
 const getStatusBadge = (status: string) => {
   const statusMap: Record<string, { bg: string; text: string; label: string }> = {
     InProgress: { bg: "bg-yellow-100", text: "text-yellow-800", label: "Đang tiến hành" },
     Completed: { bg: "bg-green-100", text: "text-green-800", label: "Hoàn thành" },
+    Published: { bg: "bg-green-100", text: "text-green-800", label: "Đã công bố" },
     Pending: { bg: "bg-gray-100", text: "text-gray-800", label: "Chờ xử lý" },
     Draft: { bg: "bg-blue-100", text: "text-blue-800", label: "Bản nháp" },
   };
@@ -72,7 +34,7 @@ export default function AssessmentsByEmployeePage() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["employee-assessments", employeeIdNum],
-    queryFn: () => fetchEmployeeAssessments(employeeIdNum),
+    queryFn: () => getAssessmentsByEmployee(employeeIdNum),
     enabled: !!employeeIdNum,
   });
 
@@ -106,16 +68,21 @@ export default function AssessmentsByEmployeePage() {
 
     // Prepare main assessments data
     const assessmentsData = data.data.map((assessment, index) => ({
-      "STT": index + 1,
+      STT: index + 1,
       "ID Đánh giá": assessment.assessmentId,
       "Tên nhân viên": assessment.employee.name,
       "Email nhân viên": assessment.employee.email,
       "Người đánh giá": assessment.supervisor.name,
-      "Trạng thái": assessment.status === "InProgress" ? "Đang tiến hành" 
-        : assessment.status === "Completed" ? "Hoàn thành"
-        : assessment.status === "Pending" ? "Chờ xử lý"
-        : assessment.status === "Draft" ? "Bản nháp"
-        : assessment.status,
+      "Trạng thái":
+        assessment.status === "InProgress"
+          ? "Đang tiến hành"
+          : assessment.status === "Completed"
+            ? "Hoàn thành"
+            : assessment.status === "Pending"
+              ? "Chờ xử lý"
+              : assessment.status === "Draft"
+                ? "Bản nháp"
+                : assessment.status,
       "Tổng điểm": assessment.totalScore.toFixed(2),
       "Số tiêu chí": assessment.criteriaScores.length,
       "Ngày tạo": format(new Date(assessment.createdAt), "dd/MM/yyyy HH:mm"),
@@ -129,9 +96,9 @@ export default function AssessmentsByEmployeePage() {
       "ID Tiêu chí": number;
       "Tên tiêu chí": string;
       "Mô tả": string;
-      "Loại": string;
+      Loại: string;
       "Trọng số": number;
-      "Điểm": number;
+      Điểm: number;
       "Nhận xét": string;
     }
     const detailedData: DetailedCriteriaData[] = [];
@@ -144,9 +111,9 @@ export default function AssessmentsByEmployeePage() {
           "ID Tiêu chí": criteriaScore.criteria.criteriaId,
           "Tên tiêu chí": criteriaScore.criteria.criteriaName,
           "Mô tả": criteriaScore.criteria.description,
-          "Loại": criteriaScore.criteria.category,
+          Loại: criteriaScore.criteria.category,
           "Trọng số": criteriaScore.criteria.weight,
-          "Điểm": criteriaScore.score,
+          Điểm: criteriaScore.score,
           "Nhận xét": criteriaScore.comment || "-",
         });
       });
@@ -158,7 +125,7 @@ export default function AssessmentsByEmployeePage() {
     const wsDetails = XLSX.utils.json_to_sheet(detailedData);
 
     wsAssessments["!cols"] = [
-      { wch: 5 },  // STT
+      { wch: 5 }, // STT
       { wch: 12 }, // ID Đánh giá
       { wch: 20 }, // Tên nhân viên
       { wch: 30 }, // Email nhân viên
@@ -178,7 +145,7 @@ export default function AssessmentsByEmployeePage() {
       { wch: 40 }, // Mô tả
       { wch: 15 }, // Loại
       { wch: 10 }, // Trọng số
-      { wch: 8 },  // Điểm
+      { wch: 8 }, // Điểm
       { wch: 40 }, // Nhận xét
     ];
 
@@ -234,7 +201,6 @@ export default function AssessmentsByEmployeePage() {
                 Tạo đánh giá mới
               </button>
             </div>
-
           </div>
 
           <div className="bg-white p-6 rounded-lg shadow-sm border">

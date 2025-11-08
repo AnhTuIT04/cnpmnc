@@ -1,50 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 import Sidebar from "@/components/shared/sidebar";
 import { format } from "date-fns";
 import { FileText, Loader2, Eye, ChevronUp, Plus, X } from "lucide-react";
 import { useState } from "react";
 import { getCriteriaList } from "@/service/api/criteria/get-list";
 import type { Criteria as CriteriaType } from "@/service/api/criteria/get-list/types";
-import type { AssessmentResponse } from "@/lib/mockAssessmentData";
-import { mockAssessmentData } from "@/lib/mockAssessmentData";
-
-// API function to fetch assessments
-const fetchAssessments = async (): Promise<AssessmentResponse> => {
-  try {
-    // Replace with your actual API endpoint
-    const response = await axios.get<unknown>("/api/assessments", {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
-
-    // Check if response is string (HTML) instead of JSON
-    if (typeof response.data === "string" || response.data === null || response.data === undefined) {
-      console.warn("API returned HTML or invalid response, using mock data");
-      return mockAssessmentData;
-    }
-
-    // Check if response has expected structure
-    const data = response.data as AssessmentResponse;
-    if (data && typeof data === "object" && "data" in data && Array.isArray(data.data)) {
-      return data;
-    }
-
-    // If response structure is invalid, use mock data
-    console.warn("API returned invalid response structure, using mock data");
-    return mockAssessmentData;
-  } catch (error) {
-    // Fallback to mock data if API fails
-    console.warn("API call failed, using mock data:", error);
-    return mockAssessmentData;
-  }
-};
+import { getSupervisorAssessments } from "@/service/api/assessments/get-supervisor";
 
 const getStatusBadge = (status: string) => {
   const statusMap: Record<string, { bg: string; text: string; label: string }> = {
     InProgress: { bg: "bg-yellow-100", text: "text-yellow-800", label: "Đang tiến hành" },
     Completed: { bg: "bg-green-100", text: "text-green-800", label: "Hoàn thành" },
+    Published: { bg: "bg-green-100", text: "text-green-800", label: "Đã công bố" },
     Pending: { bg: "bg-gray-100", text: "text-gray-800", label: "Chờ xử lý" },
     Draft: { bg: "bg-blue-100", text: "text-blue-800", label: "Bản nháp" },
   };
@@ -73,7 +40,7 @@ interface AssessmentFormData {
 export default function AssessmentsPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["assessments"],
-    queryFn: fetchAssessments,
+    queryFn: getSupervisorAssessments,
   });
 
   const { data: criteriaData } = useQuery({
